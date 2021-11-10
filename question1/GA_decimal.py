@@ -32,7 +32,6 @@ def initial_population(pop_size):
     """
     初始化种群
     :param pop_size: 种群个体数目
-    :param gene_length: 单个个体染色体的大小
     :return:
     """
     population = []
@@ -60,7 +59,7 @@ def cal_fitness(population):
 
 def find_max(population, fitness):
     max_fit = fitness[0]
-    max_chromosome = []
+    max_chromosome = 0
     for i in range(len(population)):
         tmpVal = fitness[i]
         if tmpVal > max_fit:
@@ -71,7 +70,7 @@ def find_max(population, fitness):
 
 def find_min(population, fitness):
     min_fit = fitness[0]
-    min_chromosome = []
+    min_chromosome = 0
     for i in range(len(population)):
         tmpVal = fitness[i]
         if tmpVal < min_fit:
