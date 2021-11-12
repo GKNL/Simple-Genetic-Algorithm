@@ -1,41 +1,34 @@
 import random
 import copy
-import time
 
 import matplotlib.pyplot as plt
 import numpy as np
 import math
 
 """
-题目一：
+题目二：
 基础遗传算法
 ------------------
 变量个数：n
 编码方式：十进制编码
-选择算子：1.轮盘赌  2.锦标赛
+选择算子：轮盘赌
 杂交算子：1.部分算术杂交  2.部分离散杂交
 变异算子：基因突变（将某些分量在其定义域内随机取值）
 """
 
-def score_function(X_list):
+def score_function(para_list):
     """
     目标函数
-    :param X_list: 染色体组（多个变量组成的向量）
+    :param para_list: 染色体组（多个变量组成的向量）
     :return: 目标函数值大小
     """
-    score = 0
-    x0 = X_list[0]
-    for j in range(1, 6, 1):
-        tmp = j * math.cos((j + 1) * x0 + j)
-        score += tmp
-
-    for n in range(1, N_para):
-        x = X_list[n]
-        y = 0
-        for j in range(1, 6, 1):
-            tmp = j * math.cos((j + 1) * x + j)
-            y += tmp
-        score *= y
+    x = para_list[0]
+    y = para_list[1]
+    z = para_list[2]
+    equation1 = math.pow((math.sin(x)*math.cos(y) + math.sin(y)*math.cos(z) + math.sin(z)*math.cos(x) + math.sqrt(6)/2 - 1), 2)
+    equation2 = math.pow((math.tan(x)*math.tan(y) + math.tan(y)*math.tan(z) + math.tan(z)*math.tan(x) - 4*math.sqrt(3)/3 -1), 2)
+    equation3 = math.pow((math.sin(x)*math.tan(y)*math.tan(z) - 1/2), 2)
+    score = equation1 + equation2 + equation3
     return score
 
 
@@ -46,11 +39,11 @@ def initial_population(pop_size):
     :return:
     """
     population = []
-    # 初始化生成范围在[-10,10]的pop_size个个体的十进制基因型种群
+    # 初始化生成范围在(0,10)的pop_size个个体的十进制基因型种群
     for i in range(pop_size):
         per_chromosome = []
         for n in range(N_para):
-            tmp_para = random.random() * 20 - 10
+            tmp_para = random.random() * 10
             per_chromosome.append(tmp_para)
         population.append(per_chromosome)
     return population
@@ -163,7 +156,7 @@ def disperse_crossover_part(population, cross_prob=0.4):
                 population[i] = son1
                 population[cross_pos] = son2
 
-def wheel_select(population, fitness):
+def select(population, fitness):
     """
     对种群中的个体进行筛选，保留适应的个体
     【这里是求解最小值，因此需要将问题的适应度函数进行转换（如采用倒数或相反数）！！！】
@@ -229,19 +222,19 @@ def plot(results):
 
 
 if __name__ == '__main__':
-    POP_SIZE = 100
-    X_BOUND = [-10, 10]  # x取值范围
+    POP_SIZE = 50
+    X_BOUND = [0, 10]  # x取值范围
     N_GENERATION = 1000
     CROSS_PROB = 0.7
     MUTE_PROB = 0.05
-    N_para = 2  # 变量个数
-    players = 3  # 锦标赛算法每轮参赛选手数量
+    N_para = 3  # 变量个数
+    players = 4  # 锦标赛算法每轮参赛选手数量
 
     # 1.初始化种群
-    start = time.perf_counter()
     pop = initial_population(POP_SIZE)
     # 2.迭代N代
     results = []
+    minest = 10
     for k in range(N_GENERATION):
         # 3.交叉、变异
         arithmetic_crossover_part(population=pop, cross_prob=CROSS_PROB)
@@ -250,15 +243,15 @@ if __name__ == '__main__':
         fitness = cal_fitness(pop)  # 计算种群每个个体的适应值
         best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
         results.append([best_fitness, best_chromo])
+        if best_fitness<minest:
+            minest = best_fitness
         # 5.进行种群个体选择
         pop = champion_select(pop, fitness, players)
 
-    end = time.perf_counter()
-
-    print('Running time: %s Seconds' % (end - start))
     min_fitness_index = np.argmin(fitness)
     print("min_fitness:", fitness[min_fitness_index])
     x = pop[min_fitness_index]
     print("min_x:", x)
+    print("minest_fit:", minest)
 
     plot(results)

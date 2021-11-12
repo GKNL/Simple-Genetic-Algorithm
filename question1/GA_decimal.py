@@ -10,7 +10,7 @@ import math
 ------------------
 变量个数：1
 编码方式：十进制编码
-选择算子：轮盘赌
+选择算子：1.轮盘赌  2.锦标赛
 杂交算子：整体算术杂交（直接改变父母的基因位）   # another way：新生成的个体加入种群
 变异算子：基因突变（将某些分量在其定义域内随机取值）
 """
@@ -137,8 +137,9 @@ def crossover(population, cross_prob=0.7, alpha=0.3):
             population[female_pos] = son2
 
 
-def select(population, fitness):
+def wheel_select(population, fitness):
     """
+    轮盘赌选择算子
     对种群中的个体进行筛选，保留适应的个体
     【这里是求解最小值，因此需要将问题的适应度函数进行转换（如采用倒数或相反数）！！！】
     :param population: 二进制种群
@@ -169,6 +170,27 @@ def select(population, fitness):
     return selected_res
 
 
+def champion_select(population, fitness, K_player):
+    """
+    锦标赛选择算子
+    对种群中的个体进行筛选，保留适应的个体
+    :param population: 二进制种群
+    :param fitness: 种群适应度矩阵
+    :return:
+    """
+    pop = np.array(population)
+    scores = np.array(fitness)
+    selected_res = []
+    for i in range(POP_SIZE):
+        # 从种群中随机选两个个体，进行锦标赛选择
+        index = np.random.choice(np.arange(len(population)), size=K_player, replace=True)
+        player_scores = scores[index]
+        players = pop[index]
+        min_idx = np.argmin(player_scores)
+        selected_res.append(players[min_idx])
+    return selected_res
+
+
 def plot(results):
     X = []
     Y = []
@@ -187,6 +209,7 @@ if __name__ == '__main__':
     N_GENERATION = 100
     CROSS_PROB = 0.7
     MUTE_PROB = 0.05
+    players = 3  # 锦标赛算法每轮参赛选手数量
 
     # 1.初始化种群
     pop = initial_population(POP_SIZE)
@@ -201,7 +224,7 @@ if __name__ == '__main__':
         best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
         results.append([best_fitness, best_chromo])
         # 5.进行种群个体选择
-        pop = select(pop, fitness)
+        pop = champion_select(pop, fitness, players)
 
     min_fitness_index = np.argmin(fitness)
     print("min_fitness:", fitness[min_fitness_index])
