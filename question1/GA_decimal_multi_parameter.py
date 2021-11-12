@@ -1,5 +1,6 @@
 import random
 import copy
+import time
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -214,6 +215,7 @@ if __name__ == '__main__':
     N_para = 4  # 变量个数
 
     # 1.初始化种群
+    start = time.perf_counter()
     pop = initial_population(POP_SIZE)
     # 2.迭代N代
     results = []
@@ -228,6 +230,9 @@ if __name__ == '__main__':
         # 5.进行种群个体选择
         pop = select(pop, fitness)
 
+    end = time.perf_counter()
+
+    print('Running time: %s Seconds' % (end - start))
     min_fitness_index = np.argmin(fitness)
     print("min_fitness:", fitness[min_fitness_index])
     x = pop[min_fitness_index]
