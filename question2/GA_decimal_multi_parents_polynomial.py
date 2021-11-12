@@ -7,7 +7,7 @@ import numpy as np
 import math
 
 """
-题目一：
+题目二：
 多父体杂交遗传算法
 ------------------
 变量个数：n
@@ -18,25 +18,19 @@ import math
 """
 
 
-def score_function(X_list):
+def score_function(para_list):
     """
     目标函数
-    :param X_list: 染色体组（多个变量组成的向量）
+    :param para_list: 染色体组（多个变量组成的向量）
     :return: 目标函数值大小
     """
-    score = 0
-    x0 = X_list[0]
-    for j in range(1, 6, 1):
-        tmp = j * math.cos((j + 1) * x0 + j)
-        score += tmp
-
-    for n in range(1, N_para):
-        x = X_list[n]
-        y = 0
-        for j in range(1, 6, 1):
-            tmp = j * math.cos((j + 1) * x + j)
-            y += tmp
-        score *= y
+    x = para_list[0]
+    y = para_list[1]
+    z = para_list[2]
+    equation1 = math.pow((math.sin(x)*math.cos(y) + math.sin(y)*math.cos(z) + math.sin(z)*math.cos(x) + math.sqrt(6)/2 - 1), 2)
+    equation2 = math.pow((math.tan(x)*math.tan(y) + math.tan(y)*math.tan(z) + math.tan(z)*math.tan(x) - 4*math.sqrt(3)/3 -1), 2)
+    equation3 = math.pow((math.sin(x)*math.tan(y)*math.tan(z) - 1/2), 2)
+    score = equation1 + equation2 + equation3
     return score
 
 
@@ -199,9 +193,9 @@ def plot(results):
 if __name__ == '__main__':
     POP_SIZE = 100
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 3000
+    N_GENERATION = 3500
     CROSS_PROB = 0.7
-    N_para = 4  # 变量个数
+    N_para = 3  # 变量个数
     M_parent = 10  # 杂交时父体个数
     K_top = 6  # 精英杂交算法中，选取topK个最好的个体作为父体
     L_son = 4  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
