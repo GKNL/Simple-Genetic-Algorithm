@@ -193,11 +193,10 @@ def plot(results):
 if __name__ == '__main__':
     POP_SIZE = 100
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 3500
-    CROSS_PROB = 0.7
+    N_GENERATION = 5000
     N_para = 3  # 变量个数
     M_parent = 10  # 杂交时父体个数
-    K_top = 6  # 精英杂交算法中，选取topK个最好的个体作为父体
+    K_top = 4  # 精英杂交算法中，选取topK个最好的个体作为父体
     L_son = 4  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
 
     # 1.初始化种群
