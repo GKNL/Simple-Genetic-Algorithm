@@ -184,11 +184,11 @@ def excellent_multi_parent_select(population, fitness, new_chromos):
         population[max_idx] = new_son
         fitness[max_idx] = best_son_score
 
-def plot(results):
+def plot(results, iter_nums):
     X = []
     Y = []
 
-    for i in range(N_GENERATION):
+    for i in range(iter_nums):
         X.append(i)
         Y.append(results[i][0])
 
@@ -199,12 +199,14 @@ def plot(results):
 if __name__ == '__main__':
     POP_SIZE = 100
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 3000
+    N_GENERATION = 10000  # 最大迭代次数
+    iter_nums = N_GENERATION  # 实际迭代次数
     CROSS_PROB = 0.7
     N_para = 3  # 变量个数
     M_parent = 10  # 杂交时父体个数
     K_top = 6  # 精英杂交算法中，选取topK个最好的个体作为父体
-    L_son = 4  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
+    L_son = 3  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
+    optimization = -2709.093505572829
 
     # 1.初始化种群
     start = time.perf_counter()
@@ -216,6 +218,11 @@ if __name__ == '__main__':
         fitness = cal_fitness(pop)  # 计算种群每个个体的适应值
         best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
         results.append([best_fitness, best_chromo])
+        # 当最优值与优化目标接近时，结束演化
+        if abs(best_fitness - optimization) < 1e-5:
+            print('Reach the optimization object!Total iteration time {}'.format(k + 1))
+            iter_nums = k + 1
+            break
         # 4.交叉
         new_son = excellent_multi_parent_crossover(population=pop, fitness=fitness, M_parent=M_parent, K_top=6, L_son=4)
         # 5.进行种群个体选择
@@ -229,4 +236,4 @@ if __name__ == '__main__':
     x = pop[min_fitness_index]
     print("min_x:", x)
 
-    plot(results)
+    plot(results, iter_nums)
