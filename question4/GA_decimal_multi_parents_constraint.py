@@ -271,15 +271,28 @@ def excellent_multi_parent_select(population, fitness, new_chromos):
             population[worst_idx] = new_son
             fitness[worst_idx] = new_son_fitness
 
-def plot(results):
+def plot(results, iter_nums):
+    """
+
+    :param results: 其中每一个元素为[best_fitness, best_chromo, avg_fitness]
+    :param iter_nums:
+    :return:
+    """
     X = []
-    Y = []
+    Y_best = []
+    Y_avg = []
 
-    for i in range(N_GENERATION):
+    for i in range(iter_nums):
         X.append(i)
-        Y.append(results[i][0])
+        Y_best.append(results[i][0])
+        Y_avg.append(results[i][2])
 
-    plt.plot(X, Y)
+    # 支持中文
+    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
+    plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+    plt.plot(X, Y_best, label="种群个体最优目标函数值")
+    plt.plot(X, Y_avg, label="种群个体平均目标函数值")
+    plt.legend()
     plt.show()
 
 
@@ -306,7 +319,8 @@ if __name__ == '__main__':
         punishment = cal_punishment(pop)
         fitness = cal_fitness(pop, punishment)  # 计算种群每个个体的适应值
         best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
-        results.append([best_fitness, best_chromo])
+        avg_fitness = np.sum(fitness) / POP_SIZE
+        results.append([best_fitness, best_chromo, avg_fitness])
         # 当最优值与优化目标接近时，结束演化
         if abs(best_fitness - optimization) < 1e-5:
             print('Reach the optimization object!Total iteration time {}'.format(k + 1))
@@ -324,4 +338,4 @@ if __name__ == '__main__':
     x = pop[min_fitness_index]
     print("min_x:", x)
 
-    plot(results)
+    plot(results, iter_nums)

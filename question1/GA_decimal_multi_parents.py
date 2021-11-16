@@ -24,13 +24,8 @@ def score_function(X_list):
     :param X_list: 染色体组（多个变量组成的向量）
     :return: 目标函数值大小
     """
-    score = 0
-    x0 = X_list[0]
-    for j in range(1, 6, 1):
-        tmp = j * math.cos((j + 1) * x0 + j)
-        score += tmp
-
-    for n in range(1, N_para):
+    score = 1
+    for n in range(0, N_para):
         x = X_list[n]
         y = 0
         for j in range(1, 6, 1):
@@ -185,28 +180,41 @@ def excellent_multi_parent_select(population, fitness, new_chromos):
         fitness[max_idx] = best_son_score
 
 def plot(results, iter_nums):
+    """
+
+    :param results: 其中每一个元素为[best_fitness, best_chromo, avg_fitness]
+    :param iter_nums:
+    :return:
+    """
     X = []
-    Y = []
+    Y_best = []
+    Y_avg = []
 
     for i in range(iter_nums):
         X.append(i)
-        Y.append(results[i][0])
+        Y_best.append(results[i][0])
+        Y_avg.append(results[i][2])
 
-    plt.plot(X, Y)
+    # 支持中文
+    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
+    plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+    plt.plot(X, Y_best, label="种群个体最优目标函数值")
+    plt.plot(X, Y_avg, label="种群个体平均目标函数值")
+    plt.legend()
     plt.show()
 
 
 if __name__ == '__main__':
     POP_SIZE = 100
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 10000  # 最大迭代次数
+    N_GENERATION = 50000  # 最大迭代次数
     iter_nums = N_GENERATION  # 实际迭代次数
     CROSS_PROB = 0.7
-    N_para = 3  # 变量个数
+    N_para = 4  # 变量个数
     M_parent = 10  # 杂交时父体个数
     K_top = 6  # 精英杂交算法中，选取topK个最好的个体作为父体
     L_son = 3  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
-    optimization = -2709.093505572829
+    optimization = -39303.550054363193
 
     # 1.初始化种群
     start = time.perf_counter()
@@ -217,10 +225,11 @@ if __name__ == '__main__':
         # 3.计算种群个体的适应度
         fitness = cal_fitness(pop)  # 计算种群每个个体的适应值
         best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
-        results.append([best_fitness, best_chromo])
+        avg_fitness = np.sum(fitness) / POP_SIZE
+        results.append([best_fitness, best_chromo, avg_fitness])
         # 当最优值与优化目标接近时，结束演化
-        if abs(best_fitness - optimization) < 1e-5:
-            print('Reach the optimization object!Total iteration time {}'.format(k + 1))
+        if abs(best_fitness - optimization) < 1e-11:
+            print('Reach the optimization object!Total iteration num: {}'.format(k + 1))
             iter_nums = k + 1
             break
         # 4.交叉

@@ -207,14 +207,27 @@ def select(population, fitness):
 
 
 def plot(results):
+    """
+
+    :param results: 其中每一个元素为[best_fitness, best_chromo, avg_fitness]
+    :param iter_nums:
+    :return:
+    """
     X = []
-    Y = []
+    Y_best = []
+    Y_avg = []
 
     for i in range(N_GENERATION):
         X.append(i)
-        Y.append(results[i][0])
+        Y_best.append(results[i][0])
+        Y_avg.append(results[i][2])
 
-    plt.plot(X, Y)
+    # 支持中文
+    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
+    plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+    plt.plot(X, Y_best, label="种群个体最优目标函数值")
+    plt.plot(X, Y_avg, label="种群个体平均目标函数值")
+    plt.legend()
     plt.show()
 
 
@@ -238,7 +251,8 @@ if __name__ == '__main__':
         trans_pop = transform(pop)  # 基因型转化为表现型
         fitness = cal_fitness(trans_pop)  # 计算种群每个个体的适应值
         best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
-        results.append([best_fitness, best_chromo])
+        avg_fitness = np.sum(fitness) / POP_SIZE
+        results.append([best_fitness, best_chromo, avg_fitness])
         # 5.进行种群个体选择
         pop = select(pop, fitness)
 
