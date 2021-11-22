@@ -328,6 +328,7 @@ if __name__ == '__main__':
         # 当最优值与优化目标接近时，结束演化
         if abs(best_fitness - optimization) < 1e-5:
             print('Reach the optimization object!Total iteration time {}'.format(k + 1))
+            iter_nums = k + 1
             break
         # 4.交叉
         new_son = excellent_multi_parent_crossover(population=pop, fitness=fitness, M_parent=M_parent, K_top=6, L_son=4)

@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
+from tqdm import tqdm
+
 """
 题目一：
 全局-局部演化算法
@@ -229,7 +231,7 @@ def excellent_multi_parent_select(population, fitness, new_chromos):
         fitness[max_idx] = best_son_score
 
 
-def choose_p_after_global(population, fitness, alpha):
+def choose_p_after_global(population, fitness, alpha, P, epsilon):
     """
     从P(gen)中选择p个不同的个体
     迭代选择，直至p落在[min_num, max_num]之间
@@ -237,8 +239,9 @@ def choose_p_after_global(population, fitness, alpha):
     :param alpha:
     :return:
     """
-    global P
-    global epsilon
+    # global P
+    # # TODO:要不要global？
+    # global epsilon
     res = []
     while P < min_num or P > max_num:
         res = []
@@ -265,10 +268,18 @@ def choose_p_after_global(population, fitness, alpha):
     res.sort(key=takeSecond, reverse=False)  # 找最小值，因此升序排列即可
     res_pop = [i[0] for i in res]
     res_fitness = [i[1] for i in res]
-    return res_pop, res_fitness
+    return res_pop, res_fitness, P, epsilon
 
 
-def sub_evolution(i_group, center_chromo):
+def sub_evolution(i_group, center_chromo, P, epsilon):
+    """
+    局部演化
+    :param i_group:
+    :param center_chromo:
+    :return:
+    """
+    print('-----------------------Local {}--------------------------'.format(i_group + 1))
+    time.sleep(0.5)
     start = time.perf_counter()
     # Step 3.1: 定义搜索子空间
     bound_delta = math.sqrt(epsilon * (1 + (i_group - 1) / (P - 1)) / 2)
@@ -280,7 +291,6 @@ def sub_evolution(i_group, center_chromo):
         BOUND_SUB.append(tmp_bound)
     # Step 3.2: 在Di中随机生成N1个个体形成子种群Pi(0)
     population = []
-    t = 0
     for i in range(N_local):
         per_chromosome = []
         for n in range(N_para):
@@ -290,11 +300,19 @@ def sub_evolution(i_group, center_chromo):
     # Step 3.3: 演化进行与否判断
     min_fit = 0
     max_fit = 1
-    while t<= SUB_GENERATION and min_fit != max_fit:
+    t = 0
+    # while t <= SUB_GENERATION and min_fit != max_fit:
+    for k in tqdm(range(SUB_GENERATION)):
+        if min_fit == max_fit :
+            break
         # 计算种群个体适应度
         fitness = cal_fitness(population)
         _, max_fit = find_max(population, fitness)
         _, min_fit = find_min(population, fitness)
+        # 当最优值与优化目标接近时，结束演化
+        if abs(min_fit - optimization) < 1e-3:
+            print('Reach the optimization object!Total iteration time {}'.format(k + 1))
+            break
         # Step 3.4.1: 多父体精英演化
         new_son = excellent_multi_parent_crossover(population=population, fitness=fitness, M_parent=M_parent, K_top=K_top, L_son=L_son)
         # Step 3.4.2: 进行种群个体选择
@@ -302,15 +320,15 @@ def sub_evolution(i_group, center_chromo):
         t += 1
 
     end = time.perf_counter()
-    print('-----------------------Local {}--------------------------'.format(i_group+1))
-    print('Local Space {} Running time: %s Seconds'.format(i_group) % (end - start))
+    print('Local Space {} Running time: %s Seconds'.format(i_group+1) % (end - start))
     # Step 3.5: 选取最优的个体作为该局部演化的最优结果
     min_fitness_index = np.argmin(fitness)
-    print("Local_Space_{}_min_fitness:".format(i_group), fitness[min_fitness_index])
+    print("Local_Space_{}_min_fitness:".format(i_group+1), fitness[min_fitness_index])
     x = population[min_fitness_index]
-    print("Local_Space_{}_min_x:".format(i_group), x)
+    print("Local_Space_{}_min_x:".format(i_group+1), x)
     print('-----------------------Local {}--------------------------'.format(i_group+1))
 
+    return x, fitness[min_fitness_index]
 
 
 def plot(results, iter_nums):
@@ -338,42 +356,50 @@ def plot(results, iter_nums):
     plt.show()
 
 
-if __name__ == '__main__':
-    POP_SIZE = 100
-    X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 5000  # 全局演化最大迭代次数
-    iter_nums = N_GENERATION  # 实际迭代次数
-    N_para = 3  # 变量个数
-    M_parent = 10  # 即为M1，杂交时父体个数
-    K_top = 1  # 精英杂交算法中，选取topK个最好的个体作为父体
-    L_son = 1  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
-    optimization = -2709.093505572829
+def filter_different(choromo_list, fitness_list, max_diff):
+    """
+    过滤掉与目标值相差太大的结果
+    :param choromo_list:
+    :param fitness_list:
+    :param max_diff:
+    :return:
+    """
+    res_x = []
+    res_fitness = []
+    for i, choromo in enumerate(choromo_list):
+        tmp_fitness = fitness_list[i]
+        if abs(tmp_fitness - optimization) < max_diff:
+            res_x.append(choromo)
+            res_fitness.append(tmp_fitness)
+    return res_x, res_fitness
 
-    # 全局-局部演化参数
-    SUB_GENERATION = 20000  # 局部演化最大迭代次数
-    alpha = 0.08
-    epsilon = 0.05  # 两个个体之间的欧氏距离
-    min_num = 4  # 最小最优解的个数
-    max_num = 10  # 最大最优解的个数
-    P = 0  # 局部演化的中心点数
-    N_local = 100  # 局部演化的种群大小
 
+def run_epoch():
+    """
+    运行一次GLME算法（算作一个epoch）
+    :return: epoch_res_x, epoch_res_fitness
+    """
+
+    epoch_res_x = []
+    epoch_res_fitness = []
+
+    print('-----------------------Global--------------------------')
     # 1.初始化种群
     start = time.perf_counter()
     pop = initial_population(POP_SIZE)
     # 2.迭代N代
     results = []
-    for k in range(N_GENERATION):
+    for k in tqdm(range(N_GENERATION)):
         # 3.计算种群个体的适应度
         fitness = cal_fitness(pop)  # 计算种群每个个体的适应值
         best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
         avg_fitness = np.sum(fitness) / POP_SIZE
         results.append([best_fitness, best_chromo, avg_fitness])
-        # 当最优值与优化目标接近时，结束演化
-        if abs(best_fitness - optimization) < 1e-5:
-            print('Reach the optimization object!Total iteration time {}'.format(k + 1))
-            iter_nums = k + 1
-            break
+        # # 当最优值与优化目标接近时，结束演化
+        # if abs(best_fitness - optimization) < 1e-5:
+        #     print('Reach the optimization object!Total iteration time {}'.format(k + 1))
+        #     iter_nums = k + 1
+        #     break
         # 4.交叉
         new_son = multi_parent_crossover(population=pop, M_parent=M_parent)
         # 5.进行种群个体选择
@@ -381,7 +407,6 @@ if __name__ == '__main__':
 
     end = time.perf_counter()
 
-    print('-----------------------Global--------------------------')
     print('Global Running time: %s Seconds' % (end - start))
     min_fitness_index = np.argmin(fitness)
     print("min_fitness:", fitness[min_fitness_index])
@@ -392,7 +417,97 @@ if __name__ == '__main__':
     plot(results, iter_nums)
 
     # Step 2：从P(gen)中选择p个不同的个体
-    sub_centers, sub_fitness = choose_p_after_global(pop, fitness, alpha)
+    sub_centers, sub_fitness, P, epsilon = choose_p_after_global(pop, fitness, alpha, P_num, EPSILON)
     # Step 3: 子空间演化
     for i in range(P):
-        sub_evolution(i, sub_centers[i])
+        sub_x, sub_fitness = sub_evolution(i, sub_centers[i], P, epsilon)
+        epoch_res_x.append(sub_x)
+        epoch_res_fitness.append(sub_fitness)
+
+    final_end = time.perf_counter()
+    print('Total Epoch Running time: %s Seconds' % (final_end - start))
+
+    return epoch_res_x, epoch_res_fitness
+
+
+if __name__ == '__main__':
+    EPOCHS = 2
+    MAX_DIFF = 3  # 最终优化结果与目标期望的最大差值
+
+    POP_SIZE = 100
+    X_BOUND = [-10, 10]  # x取值范围
+    N_GENERATION = 2000  # 全局演化最大迭代次数
+    iter_nums = N_GENERATION  # 实际迭代次数
+    N_para = 3  # 变量个数
+    M_parent = 10  # 即为M1，杂交时父体个数
+    K_top = 1  # 精英杂交算法中，选取topK个最好的个体作为父体
+    L_son = 1  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
+    optimization = -2709.093505572829
+
+    # 全局-局部演化参数
+    SUB_GENERATION = 10000  # 局部演化最大迭代次数
+    alpha = 0.08
+    EPSILON = 10  # 两个个体之间的欧氏距离
+    min_num = 4  # 最小最优解的个数
+    max_num = 10  # 最大最优解的个数
+    P_num = 0  # 局部演化的中心点数
+    N_local = 100  # 局部演化的种群大小
+
+    """迭代EPOCHS次，得到总体的计算结果"""
+    res_x_and_fitness = []
+    for i in range(EPOCHS):
+        epoch_x, epoch_fitness = run_epoch()
+        epoch_x, epoch_fitness = filter_different(epoch_x, epoch_fitness, MAX_DIFF)
+        res_x_and_fitness.append([epoch_x, epoch_fitness])
+
+    # 对筛选之后的种群，按适应值降序排序
+    def takeSecond(elem):  # 获取列表的第二个元素
+        return elem[1]
+
+    # res_x_and_fitness.sort(key=takeSecond, reverse=False)  # 找最小值，因此升序排列即可
+    # 打印输出结果
+    print("-----------------------RESULT--------------------------")
+    for i in range(EPOCHS):
+        tmp_x, tmp_fitness = res_x_and_fitness[i][0], res_x_and_fitness[i][1]
+        for j in range(len(tmp_x)):
+            print("{}\t{}".format(tmp_x[j], tmp_fitness[j]))
+    print("-----------------------RESULT--------------------------")
+
+    # print('-----------------------Global--------------------------')
+    # # 1.初始化种群
+    # start = time.perf_counter()
+    # pop = initial_population(POP_SIZE)
+    # # 2.迭代N代
+    # results = []
+    # for k in tqdm(range(N_GENERATION)):
+    #     # 3.计算种群个体的适应度
+    #     fitness = cal_fitness(pop)  # 计算种群每个个体的适应值
+    #     best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
+    #     avg_fitness = np.sum(fitness) / POP_SIZE
+    #     results.append([best_fitness, best_chromo, avg_fitness])
+    #     # # 当最优值与优化目标接近时，结束演化
+    #     # if abs(best_fitness - optimization) < 1e-5:
+    #     #     print('Reach the optimization object!Total iteration time {}'.format(k + 1))
+    #     #     iter_nums = k + 1
+    #     #     break
+    #     # 4.交叉
+    #     new_son = multi_parent_crossover(population=pop, M_parent=M_parent)
+    #     # 5.进行种群个体选择
+    #     multi_parent_select(pop, fitness, new_son)
+    #
+    # end = time.perf_counter()
+    #
+    # print('Global Running time: %s Seconds' % (end - start))
+    # min_fitness_index = np.argmin(fitness)
+    # print("min_fitness:", fitness[min_fitness_index])
+    # x = pop[min_fitness_index]
+    # print("min_x:", x)
+    # print('-----------------------Global--------------------------')
+    #
+    # plot(results, iter_nums)
+    #
+    # # Step 2：从P(gen)中选择p个不同的个体
+    # sub_centers, sub_fitness = choose_p_after_global(pop, fitness, alpha)
+    # # Step 3: 子空间演化
+    # for i in range(P):
+    #     sub_evolution(i, sub_centers[i])
