@@ -17,6 +17,11 @@ import math
 变异算子：基因突变（将某些分量在其定义域内随机取值）
 """
 
+def random_seed(seed):
+    np.random.seed(seed)
+    random.seed(seed)
+
+
 def score_function(X_list):
     """
     目标函数
@@ -242,7 +247,7 @@ if __name__ == '__main__':
     N_GENERATION = 1000
     CROSS_PROB = 0.7
     MUTE_PROB = 0.05
-    N_para = 1  # 变量个数
+    N_para = 2  # 变量个数
     players = 3  # 锦标赛算法每轮参赛选手数量
 
     # 1.初始化种群

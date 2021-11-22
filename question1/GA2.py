@@ -9,6 +9,11 @@ import math
 GA.py的test文件
 """
 
+def random_seed(seed):
+    np.random.seed(seed)
+    random.seed(seed)
+
+
 def score_function(x):
     """
     目标函数

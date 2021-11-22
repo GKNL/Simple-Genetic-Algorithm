@@ -20,6 +20,10 @@ import math
          3. 惩罚项
 """
 
+def random_seed(seed):
+    np.random.seed(seed)
+    random.seed(seed)
+
 
 def score_function(X_list):
     """

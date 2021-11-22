@@ -15,6 +15,11 @@ import math
 变异算子：基因突变
 """
 
+def random_seed(seed):
+    np.random.seed(seed)
+    random.seed(seed)
+
+
 def score_function(x):
     """
     目标函数

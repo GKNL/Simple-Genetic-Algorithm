@@ -16,6 +16,11 @@ import math
 变异算子：基因突变（将某些分量在其定义域内随机取值）
 """
 
+def random_seed(seed):
+    np.random.seed(seed)
+    random.seed(seed)
+
+
 def score_function(para_list):
     """
     目标函数

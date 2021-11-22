@@ -5,6 +5,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+from tqdm import tqdm
 
 """
 题目一：
@@ -16,6 +17,10 @@ import math
 杂交算子：1.多父体杂交  2.精英多父体杂交
 变异算子：无
 """
+
+def random_seed(seed):
+    np.random.seed(seed)
+    random.seed(seed)
 
 
 def score_function(X_list):
@@ -88,6 +93,24 @@ def find_min(population, fitness):
     return min_chromosome_idx, min_fit
 
 
+def judge_legal(chromosome):
+    """
+    判断一条染色体中的各决策变量是否越界
+    越界则保留为最大的边界值
+    :param chromosome:
+    :return:
+    """
+    for i in range(N_para):
+        tmp_x = chromosome[i]
+        low = X_BOUND[0]
+        high = X_BOUND[1]
+        if tmp_x > high:
+            chromosome[i] = high
+        elif tmp_x < low:
+            chromosome[i] = low
+    return chromosome
+
+
 def multi_parent_crossover(population, M_parent=5):
     """
     TODO: 不需要杂交概率？？？每一代进行一次即可？
@@ -106,7 +129,9 @@ def multi_parent_crossover(population, M_parent=5):
     for i in range(M_parent):
         tmp_parent = np.array(population[parent_indexs[i]])
         son += tmp_parent * alphas[i]
-    return son.tolist()
+    # 对新生成的个体进行判断，对越界部分进行处理
+    son = judge_legal(son.tolist())
+    return son
 
 
 def excellent_multi_parent_crossover(population, fitness, M_parent=5, K_top=3, L_son = 5):
@@ -139,7 +164,9 @@ def excellent_multi_parent_crossover(population, fitness, M_parent=5, K_top=3, L
         for i in range(M_parent):
             tmp_parent = np.array(population[parent_indexs[i]])
             son += tmp_parent * alphas[i]
-        sons.append(son.tolist())
+        # 对新生成的个体进行判断，对越界部分进行处理
+        son = judge_legal(son.tolist())
+        sons.append(son)
     return sons
 
 
@@ -210,18 +237,20 @@ if __name__ == '__main__':
     N_GENERATION = 50000  # 最大迭代次数
     iter_nums = N_GENERATION  # 实际迭代次数
     CROSS_PROB = 0.7
-    N_para = 4  # 变量个数
+    N_para = 2  # 变量个数
     M_parent = 10  # 杂交时父体个数
     K_top = 6  # 精英杂交算法中，选取topK个最好的个体作为父体
     L_son = 3  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
-    optimization = -39303.550054363193
+    optimization = -186.730908831024
 
     # 1.初始化种群
+    print("-------------------------START TRAINING----------------------------")
+    time.sleep(0.01)
     start = time.perf_counter()
     pop = initial_population(POP_SIZE)
     # 2.迭代N代
     results = []
-    for k in range(N_GENERATION):
+    for k in tqdm(range(N_GENERATION)):
         # 3.计算种群个体的适应度
         fitness = cal_fitness(pop)  # 计算种群每个个体的适应值
         best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
@@ -238,6 +267,7 @@ if __name__ == '__main__':
         excellent_multi_parent_select(pop, fitness, new_son)
 
     end = time.perf_counter()
+    print("-------------------------END TRAINING------------------------------")
 
     print('Running time: %s Seconds' % (end - start))
     min_fitness_index = np.argmin(fitness)

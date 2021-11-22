@@ -17,6 +17,10 @@ import math
 变异算子：无
 """
 
+def random_seed(seed):
+    np.random.seed(seed)
+    random.seed(seed)
+
 
 def score_function(X_list):
     """
@@ -111,6 +115,24 @@ def find_min(population, fitness):
     return min_chromosome_idx, min_fit
 
 
+def judge_legal(chromosome):
+    """
+    判断一条染色体中的各决策变量是否越界
+    越界则保留为最大的边界值
+    :param chromosome:
+    :return:
+    """
+    for i in range(N_para):
+        tmp_x = chromosome[i]
+        low = X_BOUND[0]
+        high = X_BOUND[1]
+        if tmp_x > high:
+            chromosome[i] = high
+        elif tmp_x < low:
+            chromosome[i] = low
+    return chromosome
+
+
 def multi_parent_crossover(population, M_parent=5):
     """
     TODO: 不需要杂交概率？？？每一代进行一次即可？
@@ -129,7 +151,9 @@ def multi_parent_crossover(population, M_parent=5):
     for i in range(M_parent):
         tmp_parent = np.array(population[parent_indexs[i]])
         son += tmp_parent * alphas[i]
-    return son.tolist()
+    # 对新生成的个体进行判断，对越界部分进行处理
+    son = judge_legal(son.tolist())
+    return son
 
 
 def excellent_multi_parent_crossover(population, fitness, M_parent=5, K_top=3, L_son=5):
@@ -162,7 +186,9 @@ def excellent_multi_parent_crossover(population, fitness, M_parent=5, K_top=3, L
         for i in range(M_parent):
             tmp_parent = np.array(population[parent_indexs[i]])
             son += tmp_parent * alphas[i]
-        sons.append(son.tolist())
+        # 对新生成的个体进行判断，对越界部分进行处理
+        son = judge_legal(son.tolist())
+        sons.append(son)
     return sons
 
 
@@ -249,7 +275,8 @@ def sub_evolution(i_group, center_chromo):
     BOUND_SUB = []
     for i in range(N_para):
         center_i = center_chromo[i]
-        tmp_bound = [center_i - bound_delta, center_i + bound_delta]
+        # 更新后的搜索子空间也需要在[-10,10]之间
+        tmp_bound = [max(-10, center_i - bound_delta), min(10, center_i + bound_delta)]
         BOUND_SUB.append(tmp_bound)
     # Step 3.2: 在Di中随机生成N1个个体形成子种群Pi(0)
     population = []
@@ -314,19 +341,19 @@ def plot(results, iter_nums):
 if __name__ == '__main__':
     POP_SIZE = 100
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 500  # 全局演化最大迭代次数
+    N_GENERATION = 5000  # 全局演化最大迭代次数
     iter_nums = N_GENERATION  # 实际迭代次数
-    N_para = 2  # 变量个数
+    N_para = 3  # 变量个数
     M_parent = 10  # 即为M1，杂交时父体个数
     K_top = 1  # 精英杂交算法中，选取topK个最好的个体作为父体
     L_son = 1  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
     optimization = -2709.093505572829
 
     # 全局-局部演化参数
-    SUB_GENERATION = 5000  # 局部演化最大迭代次数
+    SUB_GENERATION = 20000  # 局部演化最大迭代次数
     alpha = 0.08
     epsilon = 0.05  # 两个个体之间的欧氏距离
-    min_num = 3  # 最小最优解的个数
+    min_num = 4  # 最小最优解的个数
     max_num = 10  # 最大最优解的个数
     P = 0  # 局部演化的中心点数
     N_local = 100  # 局部演化的种群大小

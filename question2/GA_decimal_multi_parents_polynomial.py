@@ -17,6 +17,10 @@ import math
 变异算子：无
 """
 
+def random_seed(seed):
+    np.random.seed(seed)
+    random.seed(seed)
+
 
 def score_function(para_list):
     """
