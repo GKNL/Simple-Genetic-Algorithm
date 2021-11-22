@@ -4,6 +4,7 @@ import copy
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+from alive_progress import alive_bar
 
 """
 基础遗传算法
@@ -228,17 +229,19 @@ if __name__ == '__main__':
     pop = initial_population(POP_SIZE)
     # 2.迭代N代
     results = []
-    for k in range(N_GENERATION):
-        # 3.交叉、变异
-        crossover(population=pop, cross_prob=CROSS_PROB)
-        mutation(population=pop, mute_prob=MUTE_PROB)
-        # 4.计算种群个体的适应度
-        fitness = cal_fitness(pop)  # 计算种群每个个体的适应值
-        best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
-        avg_fitness = np.sum(fitness) / POP_SIZE
-        results.append([best_fitness, best_chromo, avg_fitness])
-        # 5.进行种群个体选择
-        pop = champion_select(pop, fitness, players)
+    with alive_bar(N_GENERATION) as bar:
+        for k in range(N_GENERATION):
+            bar()
+            # 3.交叉、变异
+            crossover(population=pop, cross_prob=CROSS_PROB)
+            mutation(population=pop, mute_prob=MUTE_PROB)
+            # 4.计算种群个体的适应度
+            fitness = cal_fitness(pop)  # 计算种群每个个体的适应值
+            best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
+            avg_fitness = np.sum(fitness) / POP_SIZE
+            results.append([best_fitness, best_chromo, avg_fitness])
+            # 5.进行种群个体选择
+            pop = champion_select(pop, fitness, players)
 
     min_fitness_index = np.argmin(fitness)
     print("min_fitness:", fitness[min_fitness_index])
