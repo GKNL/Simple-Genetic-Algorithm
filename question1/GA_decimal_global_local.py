@@ -272,6 +272,7 @@ def sub_evolution(i_group, center_chromo):
         new_son = excellent_multi_parent_crossover(population=population, fitness=fitness, M_parent=M_parent, K_top=K_top, L_son=L_son)
         # Step 3.4.2: 进行种群个体选择
         excellent_multi_parent_select(population, fitness, new_son)
+        t += 1
 
     end = time.perf_counter()
     print('-----------------------Local {}--------------------------'.format(i_group+1))
@@ -322,7 +323,7 @@ if __name__ == '__main__':
     optimization = -2709.093505572829
 
     # 全局-局部演化参数
-    SUB_GENERATION = 500  # 局部演化最大迭代次数
+    SUB_GENERATION = 5000  # 局部演化最大迭代次数
     alpha = 0.08
     epsilon = 0.05  # 两个个体之间的欧氏距离
     min_num = 3  # 最小最优解的个数
