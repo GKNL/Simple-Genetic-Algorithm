@@ -128,10 +128,12 @@ def judge_legal(chromosome):
         tmp_x = chromosome[i]
         low = X_BOUND[0]
         high = X_BOUND[1]
-        if tmp_x > high:
-            chromosome[i] = high
-        elif tmp_x < low:
-            chromosome[i] = low
+        # if tmp_x > high:
+        #     chromosome[i] = high
+        # elif tmp_x < low:
+        #     chromosome[i] = low
+        if tmp_x > high or tmp_x < low:
+            chromosome[i] = random.uniform(low, high)
     return chromosome
 
 
@@ -237,7 +239,7 @@ def choose_p_after_global(population, fitness, alpha, P, epsilon):
     迭代选择，直至p落在[min_num, max_num]之间
     :param population:
     :param alpha:
-    :return:
+    :return: res_pop, res_fitness, P, epsilon（更新后的P和epsilon也要返回）
     """
     # global P
     # # TODO:要不要global？
@@ -247,7 +249,7 @@ def choose_p_after_global(population, fitness, alpha, P, epsilon):
         res = []
         # 对于任意不同的i和j，都有欧氏距离大于epsilon
         for i in range(POP_SIZE):
-            flag = True  # 默认个体i与所有
+            flag = True  # 默认个体i与所有其他个体的欧氏距离都大于epsilon
             for j in range(POP_SIZE):
                 distance = cal_euclidean(population[i], fitness[i], population[j], fitness[j])
                 if i != j and distance <= epsilon:
@@ -414,15 +416,15 @@ def run_epoch():
     print("min_x:", x)
     print('-----------------------Global--------------------------')
 
-    plot(results, iter_nums)
+    # plot(results, iter_nums)
 
     # Step 2：从P(gen)中选择p个不同的个体
     sub_centers, sub_fitness, P, epsilon = choose_p_after_global(pop, fitness, alpha, P_num, EPSILON)
     # Step 3: 子空间演化
     for i in range(P):
-        sub_x, sub_fitness = sub_evolution(i, sub_centers[i], P, epsilon)
-        epoch_res_x.append(sub_x)
-        epoch_res_fitness.append(sub_fitness)
+        local_x, local_fitness = sub_evolution(i, sub_centers[i], P, epsilon)
+        epoch_res_x.append(local_x)
+        epoch_res_fitness.append(local_fitness)
 
     final_end = time.perf_counter()
     print('Total Epoch Running time: %s Seconds' % (final_end - start))
@@ -431,21 +433,21 @@ def run_epoch():
 
 
 if __name__ == '__main__':
-    EPOCHS = 2
-    MAX_DIFF = 3  # 最终优化结果与目标期望的最大差值
+    EPOCHS = 50
+    MAX_DIFF = 5  # 最终优化结果与目标期望的最大差值
 
     POP_SIZE = 100
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 2000  # 全局演化最大迭代次数
+    N_GENERATION = 5000  # 全局演化最大迭代次数
     iter_nums = N_GENERATION  # 实际迭代次数
-    N_para = 3  # 变量个数
+    N_para = 4  # 变量个数
     M_parent = 10  # 即为M1，杂交时父体个数
     K_top = 1  # 精英杂交算法中，选取topK个最好的个体作为父体
     L_son = 1  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
-    optimization = -2709.093505572829
+    optimization = -39303.550054363193
 
     # 全局-局部演化参数
-    SUB_GENERATION = 10000  # 局部演化最大迭代次数
+    SUB_GENERATION = 16000  # 局部演化最大迭代次数
     alpha = 0.08
     EPSILON = 10  # 两个个体之间的欧氏距离
     min_num = 4  # 最小最优解的个数
@@ -456,9 +458,12 @@ if __name__ == '__main__':
     """迭代EPOCHS次，得到总体的计算结果"""
     res_x_and_fitness = []
     for i in range(EPOCHS):
+        print("**************************EPOCH {}****************************".format(i+1))
+        time.sleep(0.1)
         epoch_x, epoch_fitness = run_epoch()
         epoch_x, epoch_fitness = filter_different(epoch_x, epoch_fitness, MAX_DIFF)
         res_x_and_fitness.append([epoch_x, epoch_fitness])
+        print("**************************EPOCH {}****************************".format(i + 1))
 
     # 对筛选之后的种群，按适应值降序排序
     def takeSecond(elem):  # 获取列表的第二个元素

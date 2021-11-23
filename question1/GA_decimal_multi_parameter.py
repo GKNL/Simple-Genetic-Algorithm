@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
+from tqdm import tqdm
+
 """
 题目一：
 基础遗传算法
@@ -216,7 +218,7 @@ def champion_select(population, fitness, K_player):
     return selected_res
 
 
-def plot(results):
+def plot(results, iter_nums):
     """
 
     :param results: 其中每一个元素为[best_fitness, best_chromo, avg_fitness]
@@ -227,7 +229,7 @@ def plot(results):
     Y_best = []
     Y_avg = []
 
-    for i in range(N_GENERATION):
+    for i in range(iter_nums):
         X.append(i)
         Y_best.append(results[i][0])
         Y_avg.append(results[i][2])
@@ -244,18 +246,20 @@ def plot(results):
 if __name__ == '__main__':
     POP_SIZE = 100
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 1000
+    N_GENERATION = 5000
+    iter_nums = N_GENERATION  # 实际迭代次数
     CROSS_PROB = 0.7
     MUTE_PROB = 0.05
-    N_para = 2  # 变量个数
-    players = 3  # 锦标赛算法每轮参赛选手数量
+    N_para = 4  # 变量个数
+    players = 5  # 锦标赛算法每轮参赛选手数量
+    optimization = -39303.550054363193
 
     # 1.初始化种群
     start = time.perf_counter()
     pop = initial_population(POP_SIZE)
     # 2.迭代N代
     results = []
-    for k in range(N_GENERATION):
+    for k in tqdm(range(N_GENERATION)):
         # 3.交叉、变异
         arithmetic_crossover_part(population=pop, cross_prob=CROSS_PROB)
         mutation(population=pop, mute_prob=MUTE_PROB)
@@ -264,6 +268,11 @@ if __name__ == '__main__':
         best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
         avg_fitness = np.sum(fitness) / POP_SIZE
         results.append([best_fitness, best_chromo, avg_fitness])
+        # 当最优值与优化目标接近时，结束演化
+        if abs(best_fitness - optimization) < 1e-2:
+            print('Reach the optimization object!Total iteration num: {}'.format(k + 1))
+            iter_nums = k + 1
+            break
         # 5.进行种群个体选择
         pop = champion_select(pop, fitness, players)
 
@@ -275,4 +284,4 @@ if __name__ == '__main__':
     x = pop[min_fitness_index]
     print("min_x:", x)
 
-    plot(results)
+    plot(results, iter_nums)

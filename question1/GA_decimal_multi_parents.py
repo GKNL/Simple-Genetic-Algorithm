@@ -237,11 +237,11 @@ if __name__ == '__main__':
     N_GENERATION = 50000  # 最大迭代次数
     iter_nums = N_GENERATION  # 实际迭代次数
     CROSS_PROB = 0.7
-    N_para = 2  # 变量个数
+    N_para = 4  # 变量个数
     M_parent = 10  # 杂交时父体个数
     K_top = 6  # 精英杂交算法中，选取topK个最好的个体作为父体
     L_son = 3  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
-    optimization = -186.730908831024
+    optimization = -39303.550054363193
 
     # 1.初始化种群
     print("-------------------------START TRAINING----------------------------")
@@ -257,7 +257,7 @@ if __name__ == '__main__':
         avg_fitness = np.sum(fitness) / POP_SIZE
         results.append([best_fitness, best_chromo, avg_fitness])
         # 当最优值与优化目标接近时，结束演化
-        if abs(best_fitness - optimization) < 1e-11:
+        if abs(best_fitness - optimization) < 1e-8:
             print('Reach the optimization object!Total iteration num: {}'.format(k + 1))
             iter_nums = k + 1
             break

@@ -27,7 +27,7 @@ def score_function(x):
     :return: 目标函数值大小
     """
     y = 0
-    for j in range(1, 6, 1):
+    for j in range(1, 6):
         tmp = j * math.cos((j + 1) * x + j)
         y += tmp
     return y
@@ -117,6 +117,13 @@ def mutation(population, mute_prob=0.05):
     :param mute_prob:变异概率
     :return:
     """
+    for chrom in population:
+        for j in range(len(chrom)):
+            val = chrom[j]
+            choice = random.random()  # 0-1之间的随机数
+            if choice < mute_prob:
+                chrom[j] = val ^ 1  # 取反
+
     # for chrom in population:
     #     choice = random.random()  # 0-1之间的随机数
     #     # 符合变异要求
@@ -124,13 +131,6 @@ def mutation(population, mute_prob=0.05):
     #         pos = random.randint(0, len(chrom)-1)
     #         val = chrom[pos]
     #         chrom[pos] = val ^ 1  # 取反
-
-    for chrom in population:
-        for j in range(len(chrom)):
-            val = chrom[j]
-            choice = random.random()  # 0-1之间的随机数
-            if choice < mute_prob:
-                chrom[j] = val ^ 1  # 取反
 
 
 # def crossover(population, cross_prob=0.4):
@@ -203,7 +203,6 @@ def select(population, fitness):
     for i in range(len(adj_fitness)):
         probabilities.append(adj_fitness[i] / total)
     # 依概率随机筛选下一代个体
-    # TODO: np.arange里？应该是新的population的size吧
     index = np.random.choice(np.arange(len(population)), size=POP_SIZE, replace=True, p=probabilities)
     selected_res = []
     for idx in index:
@@ -240,24 +239,29 @@ if __name__ == '__main__':
     CHOROMOSOME_LENGTH = 20  # 种群染色体大小
     POP_SIZE = 200
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 100
+    N_GENERATION = 500
     CROSS_PROB = 0.7
     MUTE_PROB = 0.05
+    optimization = -12.870885497726
 
     # 1.初始化种群
     pop = initial_population(POP_SIZE, CHOROMOSOME_LENGTH)
     # 2.迭代N代
     results = []
     for k in range(N_GENERATION):
-        # 3.交叉、变异
-        crossover(population=pop, cross_prob=CROSS_PROB)
-        mutation(population=pop, mute_prob=MUTE_PROB)
-        # 4.计算种群个体的适应度
+        # 3.计算种群个体的适应度
         trans_pop = transform(pop)  # 基因型转化为表现型
         fitness = cal_fitness(trans_pop)  # 计算种群每个个体的适应值
         best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
         avg_fitness = np.sum(fitness) / POP_SIZE
         results.append([best_fitness, best_chromo, avg_fitness])
+        # 当最优值与优化目标接近时，结束演化
+        if abs(best_fitness - optimization) < 1e-8:
+            print('Reach the optimization object!Total iteration num: {}'.format(k + 1))
+            break
+        # 4.交叉、变异
+        crossover(population=pop, cross_prob=CROSS_PROB)
+        mutation(population=pop, mute_prob=MUTE_PROB)
         # 5.进行种群个体选择
         pop = select(pop, fitness)
 

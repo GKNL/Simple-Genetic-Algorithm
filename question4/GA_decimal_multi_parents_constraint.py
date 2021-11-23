@@ -304,7 +304,7 @@ if __name__ == '__main__':
     POP_SIZE = 100
     LOWER_BOUND = [78, 33, 27, 27, 27]  # 决策变量下界
     UPPER_BOUND = [102, 45, 45, 45, 45]  # 决策变量上界
-    N_GENERATION = 50000  # 最大迭代次数
+    N_GENERATION = 20000  # 最大迭代次数
     iter_nums = N_GENERATION  # 实际迭代次数
     CROSS_PROB = 0.7
     N_para = 5  # 变量个数
