@@ -246,12 +246,12 @@ def plot(results, iter_nums):
 if __name__ == '__main__':
     POP_SIZE = 100
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 5000
+    N_GENERATION = 10000
     iter_nums = N_GENERATION  # 实际迭代次数
     CROSS_PROB = 0.7
     MUTE_PROB = 0.05
     N_para = 4  # 变量个数
-    players = 5  # 锦标赛算法每轮参赛选手数量
+    players = 3  # 锦标赛算法每轮参赛选手数量
     optimization = -39303.550054363193
 
     # 1.初始化种群
@@ -269,7 +269,7 @@ if __name__ == '__main__':
         avg_fitness = np.sum(fitness) / POP_SIZE
         results.append([best_fitness, best_chromo, avg_fitness])
         # 当最优值与优化目标接近时，结束演化
-        if abs(best_fitness - optimization) < 1e-2:
+        if abs(best_fitness - optimization) < 0.1:
             print('Reach the optimization object!Total iteration num: {}'.format(k + 1))
             iter_nums = k + 1
             break

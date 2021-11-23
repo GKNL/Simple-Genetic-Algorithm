@@ -113,9 +113,7 @@ def judge_legal(chromosome):
 
 def multi_parent_crossover(population, M_parent=5):
     """
-    TODO: 不需要杂交概率？？？每一代进行一次即可？
     对种群中的个体，进行多父体杂交
-    [直接对父母的染色体进行杂交更改]
     :param population:
     :param M_parent: 多父体杂交M参数
     :return:
@@ -232,15 +230,15 @@ def plot(results, iter_nums):
 
 
 if __name__ == '__main__':
-    POP_SIZE = 100
+    POP_SIZE = 150
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 50000  # 最大迭代次数
+    N_GENERATION = 70000  # 最大迭代次数
     iter_nums = N_GENERATION  # 实际迭代次数
     CROSS_PROB = 0.7
     N_para = 4  # 变量个数
     M_parent = 10  # 杂交时父体个数
-    K_top = 6  # 精英杂交算法中，选取topK个最好的个体作为父体
-    L_son = 3  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
+    K_top = 3  # 精英杂交算法中，选取topK个最好的个体作为父体
+    L_son = 1  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
     optimization = -39303.550054363193
 
     # 1.初始化种群
@@ -257,7 +255,7 @@ if __name__ == '__main__':
         avg_fitness = np.sum(fitness) / POP_SIZE
         results.append([best_fitness, best_chromo, avg_fitness])
         # 当最优值与优化目标接近时，结束演化
-        if abs(best_fitness - optimization) < 1e-8:
+        if abs(best_fitness - optimization) < 1e-4:
             print('Reach the optimization object!Total iteration num: {}'.format(k + 1))
             iter_nums = k + 1
             break

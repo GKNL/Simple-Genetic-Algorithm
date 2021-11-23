@@ -416,7 +416,7 @@ def run_epoch():
     print("min_x:", x)
     print('-----------------------Global--------------------------')
 
-    # plot(results, iter_nums)
+    plot(results, iter_nums)
 
     # Step 2：从P(gen)中选择p个不同的个体
     sub_centers, sub_fitness, P, epsilon = choose_p_after_global(pop, fitness, alpha, P_num, EPSILON)
@@ -434,11 +434,11 @@ def run_epoch():
 
 if __name__ == '__main__':
     EPOCHS = 50
-    MAX_DIFF = 5  # 最终优化结果与目标期望的最大差值
+    MAX_DIFF = 1  # 最终优化结果与目标期望的最大差值
 
-    POP_SIZE = 100
+    POP_SIZE = 250
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 5000  # 全局演化最大迭代次数
+    N_GENERATION = 50000  # 全局演化最大迭代次数
     iter_nums = N_GENERATION  # 实际迭代次数
     N_para = 4  # 变量个数
     M_parent = 10  # 即为M1，杂交时父体个数
@@ -447,13 +447,13 @@ if __name__ == '__main__':
     optimization = -39303.550054363193
 
     # 全局-局部演化参数
-    SUB_GENERATION = 16000  # 局部演化最大迭代次数
+    SUB_GENERATION = 100000  # 局部演化最大迭代次数
     alpha = 0.08
     EPSILON = 10  # 两个个体之间的欧氏距离
-    min_num = 4  # 最小最优解的个数
+    min_num = 5  # 最小最优解的个数
     max_num = 10  # 最大最优解的个数
     P_num = 0  # 局部演化的中心点数
-    N_local = 100  # 局部演化的种群大小
+    N_local = 150  # 局部演化的种群大小
 
     """迭代EPOCHS次，得到总体的计算结果"""
     res_x_and_fitness = []
