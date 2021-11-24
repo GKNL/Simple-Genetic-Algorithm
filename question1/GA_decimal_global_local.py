@@ -312,11 +312,12 @@ def sub_evolution(i_group, center_chromo, P, epsilon):
         _, max_fit = find_max(population, fitness)
         _, min_fit = find_min(population, fitness)
         # 当最优值与优化目标接近时，结束演化
-        if abs(min_fit - optimization) < 1e-3:
+        if abs(min_fit - optimization) < 1e-4:
             print('Reach the optimization object!Total iteration time {}'.format(k + 1))
             break
         # Step 3.4.1: 多父体精英演化
-        new_son = excellent_multi_parent_crossover(population=population, fitness=fitness, M_parent=M_parent, K_top=K_top, L_son=L_son)
+        new_son = excellent_multi_parent_crossover(population=population, fitness=fitness,
+                                                   M_parent=M_parent, K_top=K_top, L_son=L_son)
         # Step 3.4.2: 进行种群个体选择
         excellent_multi_parent_select(population, fitness, new_son)
         t += 1
@@ -350,10 +351,9 @@ def plot(results, iter_nums):
         Y_avg.append(results[i][2])
 
     # 支持中文
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
     plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
-    plt.plot(X, Y_best, label="种群个体最优目标函数值")
-    plt.plot(X, Y_avg, label="种群个体平均目标函数值")
+    plt.plot(X, Y_best, label="Minimum Function Score")
+    plt.plot(X, Y_avg, label="Average Function Score")
     plt.legend()
     plt.show()
 
@@ -433,27 +433,27 @@ def run_epoch():
 
 
 if __name__ == '__main__':
-    EPOCHS = 50
-    MAX_DIFF = 1  # 最终优化结果与目标期望的最大差值
+    EPOCHS = 5
+    MAX_DIFF = 1e-3  # 最终优化结果与目标期望的最大差值
 
-    POP_SIZE = 250
+    POP_SIZE = 100
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 50000  # 全局演化最大迭代次数
+    N_GENERATION = 500  # 全局演化最大迭代次数
     iter_nums = N_GENERATION  # 实际迭代次数
-    N_para = 4  # 变量个数
+    N_para = 2  # 变量个数
     M_parent = 10  # 即为M1，杂交时父体个数
     K_top = 1  # 精英杂交算法中，选取topK个最好的个体作为父体
     L_son = 1  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
-    optimization = -39303.550054363193
+    optimization = -186.730908831024
 
     # 全局-局部演化参数
-    SUB_GENERATION = 100000  # 局部演化最大迭代次数
+    SUB_GENERATION = 10000  # 局部演化最大迭代次数
     alpha = 0.08
     EPSILON = 10  # 两个个体之间的欧氏距离
-    min_num = 5  # 最小最优解的个数
+    min_num = 4  # 最小最优解的个数
     max_num = 10  # 最大最优解的个数
     P_num = 0  # 局部演化的中心点数
-    N_local = 150  # 局部演化的种群大小
+    N_local = 100  # 局部演化的种群大小
 
     """迭代EPOCHS次，得到总体的计算结果"""
     res_x_and_fitness = []

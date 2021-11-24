@@ -6,11 +6,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
+from tqdm import tqdm
+
 """
 题目二：
 多父体杂交遗传算法
 ------------------
-变量个数：n
+变量个数：3
 编码方式：十进制编码
 选择算子：~
 杂交算子：1.多父体杂交  2.精英多父体杂交
@@ -199,10 +201,10 @@ def plot(results, iter_nums):
         Y_avg.append(results[i][2])
 
     # 支持中文
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
     plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
-    plt.plot(X, Y_best, label="种群个体最优目标函数值")
-    plt.plot(X, Y_avg, label="种群个体平均目标函数值")
+    plt.plot(X, Y_best, label="Minimum Function Score")
+    plt.plot(X, Y_avg, label="Average Function Score")
+    plt.ylim((0, 1))
     plt.legend()
     plt.show()
 
@@ -210,27 +212,27 @@ def plot(results, iter_nums):
 if __name__ == '__main__':
     POP_SIZE = 100
     X_BOUND = [-10, 10]  # x取值范围
-    N_GENERATION = 20000
+    N_GENERATION = 10000
     iter_nums = N_GENERATION  # 实际迭代次数
     N_para = 3  # 变量个数
     M_parent = 10  # 杂交时父体个数
     K_top = 4  # 精英杂交算法中，选取topK个最好的个体作为父体
     L_son = 4  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
-    optimization = 5.317713118060457e-12
+    optimization = 1e-8
 
     # 1.初始化种群
     start = time.perf_counter()
     pop = initial_population(POP_SIZE)
     # 2.迭代N代
     results = []
-    for k in range(N_GENERATION):
+    for k in tqdm(range(N_GENERATION)):
         # 3.计算种群个体的适应度
         fitness = cal_fitness(pop)  # 计算种群每个个体的适应值
         best_chromo, best_fitness = find_min(population=pop, fitness=fitness)
         avg_fitness = np.sum(fitness) / POP_SIZE
         results.append([best_fitness, best_chromo, avg_fitness])
         # 当最优值与优化目标接近时，结束演化
-        if abs(best_fitness - optimization) < 1e-8:
+        if abs(best_fitness) < optimization:
             print('Reach the optimization object!Total iteration num: {}'.format(k + 1))
             iter_nums = k + 1
             break

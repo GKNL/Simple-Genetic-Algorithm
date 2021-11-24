@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
+from tqdm import tqdm
+
 """
 题目四：
 多父体杂交遗传算法
@@ -15,7 +17,7 @@ import math
 选择算子：~
 杂交算子：1.多父体杂交  2.精英多父体杂交
 变异算子：无
-约束限制：1. 种群初始化时进行限制限制
+约束限制：1. 种群初始化时进行限制
          2. 交叉变异后，通过if语句来进行判断
          3. 惩罚项
 """
@@ -45,8 +47,8 @@ def punish_function(X_list):
     x = X_list
     x1, x2, x3, x4, x5 = x[0], x[1], x[2], x[3], x[4]
     # 不等式约束一
-    e1_left = 0 - (85.334407 + 0.0056858 * x2 * x5 + 0.0006262 * x1 * x4 - 0.0022503 * x3 * x5)
-    e1_right = 85.334407 + 0.0056858 * x2 * x5 + 0.0006262 * x1 * x4 - 0.0022503 * x3 * x5 - 92
+    e1_left = 0 - (85.334407 + 0.0056858 * x2 * x5 + 0.0006262 * x1 * x4 - 0.0022053 * x3 * x5)
+    e1_right = 85.334407 + 0.0056858 * x2 * x5 + 0.0006262 * x1 * x4 - 0.0022053 * x3 * x5 - 92
     cost += max(0, e1_left) + max(0, e1_right)
     # 不等式约束二
     e2_left = 90 - (80.51249 + 0.0071317 * x2 * x5 + 0.0029955 * x1 * x2 + 0.0021813 * x3 * x3)
@@ -88,7 +90,7 @@ def cal_fitness(population, punishment):
     for i in range(len(population)):
         x_list = population[i]
         # 适应度值=目标函数值+惩罚项
-        tmp_fitness = score_function(x_list) + 1000*punishment[i]
+        tmp_fitness = score_function(x_list) + 700*punishment[i]
         fitness.append(tmp_fitness)
     return fitness
 
@@ -292,25 +294,25 @@ def plot(results, iter_nums):
         Y_avg.append(results[i][2])
 
     # 支持中文
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
     plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
-    plt.plot(X, Y_best, label="种群个体最优目标函数值")
-    plt.plot(X, Y_avg, label="种群个体平均目标函数值")
+    plt.plot(X, Y_best, label="Minimum Function Score")
+    plt.plot(X, Y_avg, label="Average Function Score")
+    # plt.ylim((-30700, -30000))
     plt.legend()
     plt.show()
 
 
 if __name__ == '__main__':
-    POP_SIZE = 100
+    POP_SIZE = 150
     LOWER_BOUND = [78, 33, 27, 27, 27]  # 决策变量下界
     UPPER_BOUND = [102, 45, 45, 45, 45]  # 决策变量上界
-    N_GENERATION = 20000  # 最大迭代次数
+    N_GENERATION = 50000  # 最大迭代次数
     iter_nums = N_GENERATION  # 实际迭代次数
     CROSS_PROB = 0.7
     N_para = 5  # 变量个数
     M_parent = 10  # 杂交时父体个数
     K_top = 5  # 精英杂交算法中，选取topK个最好的个体作为父体
-    L_son = 3  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
+    L_son = 1  # 在子空间中生成L_son个新个体，选取其中一个与上一代的最差个体进行比较
     optimization = -30665.5
 
     # 1.初始化种群
@@ -318,7 +320,7 @@ if __name__ == '__main__':
     pop = initial_population(POP_SIZE)
     # 2.迭代N代
     results = []
-    for k in range(N_GENERATION):
+    for k in tqdm(range(N_GENERATION)):
         # 3.计算种群个体的罚值和适应度
         punishment = cal_punishment(pop)
         fitness = cal_fitness(pop, punishment)  # 计算种群每个个体的适应值
@@ -326,7 +328,7 @@ if __name__ == '__main__':
         avg_fitness = np.sum(fitness) / POP_SIZE
         results.append([best_fitness, best_chromo, avg_fitness])
         # 当最优值与优化目标接近时，结束演化
-        if abs(best_fitness - optimization) < 1e-5:
+        if abs(best_fitness - optimization) < 1:
             print('Reach the optimization object!Total iteration time {}'.format(k + 1))
             iter_nums = k + 1
             break

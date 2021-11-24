@@ -5,13 +5,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
+from tqdm import tqdm
+
 """
 题目二：
 基础遗传算法
 ------------------
-变量个数：n
+变量个数：3
 编码方式：十进制编码
-选择算子：轮盘赌
+选择算子：1.轮盘赌  2.锦标赛
 杂交算子：1.部分算术杂交  2.部分离散杂交
 变异算子：基因突变（将某些分量在其定义域内随机取值）
 """
@@ -231,33 +233,33 @@ def plot(results, iter_nums):
         Y_avg.append(results[i][2])
 
     # 支持中文
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
     plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
-    plt.plot(X, Y_best, label="种群个体最优目标函数值")
-    plt.plot(X, Y_avg, label="种群个体平均目标函数值")
+    plt.plot(X, Y_best, label="Minimum Function Score")
+    plt.plot(X, Y_avg, label="Average Function Score")
+    plt.ylim((0, 1))
     plt.legend()
     plt.show()
 
 
 if __name__ == '__main__':
-    POP_SIZE = 50
+    POP_SIZE = 100
     X_BOUND = [0, 10]  # x取值范围
-    N_GENERATION = 1000
+    N_GENERATION = 10000
     iter_nums = N_GENERATION  # 实际迭代次数
     CROSS_PROB = 0.7
     MUTE_PROB = 0.05
     N_para = 3  # 变量个数
     players = 4  # 锦标赛算法每轮参赛选手数量
-    optimization = 5.317713118060457e-12
+    optimization = 1e-2
 
     # 1.初始化种群
     pop = initial_population(POP_SIZE)
     # 2.迭代N代
     results = []
     minest = 10
-    for k in range(N_GENERATION):
+    for k in tqdm(range(N_GENERATION)):
         # 3.交叉、变异
-        arithmetic_crossover_part(population=pop, cross_prob=CROSS_PROB)
+        disperse_crossover_part(population=pop, cross_prob=CROSS_PROB)
         mutation(population=pop, mute_prob=MUTE_PROB)
         # 4.计算种群个体的适应度
         fitness = cal_fitness(pop)  # 计算种群每个个体的适应值
@@ -265,7 +267,7 @@ if __name__ == '__main__':
         avg_fitness = np.sum(fitness) / POP_SIZE
         results.append([best_fitness, best_chromo, avg_fitness])
         # 当最优值与优化目标接近时，结束演化
-        if abs(best_fitness - optimization) < 1e-8:
+        if abs(best_fitness) < optimization:
             print('Reach the optimization object!Total iteration num: {}'.format(k + 1))
             iter_nums = k + 1
             break
@@ -278,6 +280,6 @@ if __name__ == '__main__':
     print("min_fitness:", fitness[min_fitness_index])
     x = pop[min_fitness_index]
     print("min_x:", x)
-    print("minest_fit:", minest)
+    print("Minimum_fit:", minest)
 
     plot(results, iter_nums)

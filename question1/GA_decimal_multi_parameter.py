@@ -250,9 +250,9 @@ if __name__ == '__main__':
     iter_nums = N_GENERATION  # 实际迭代次数
     CROSS_PROB = 0.7
     MUTE_PROB = 0.05
-    N_para = 4  # 变量个数
+    N_para = 3  # 变量个数
     players = 3  # 锦标赛算法每轮参赛选手数量
-    optimization = -39303.550054363193
+    optimization = -2709.093505572829
 
     # 1.初始化种群
     start = time.perf_counter()
